@@ -9,7 +9,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use codec::{Decode, Encode};
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::{Currency, FindAuthor, Imbalance, KeyOwnerProofSystem, Nothing, OnUnbalanced},
+    traits::{Currency, FindAuthor, Imbalance, KeyOwnerProofSystem, Nothing, OnUnbalanced, OnRuntimeUpgrade},
     weights::{
         constants::{RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
@@ -64,7 +64,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("astar-local"),
     impl_name: create_runtime_str!("astar-local"),
     authoring_version: 1,
-    spec_version: 1,
+    spec_version: 3,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -625,7 +625,26 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
+    (DappsStakingMigrationV3)
 >;
+
+pub struct DappsStakingMigrationV3;
+
+impl OnRuntimeUpgrade for DappsStakingMigrationV3 {
+    fn on_runtime_upgrade() -> frame_support::weights::Weight {
+        pallet_dapps_staking::migrations::v3::migrate::<Runtime>()
+    }
+
+    // #[cfg(feature = "try-runtime")]
+    // fn pre_upgrade() -> Result<(), &'static str> {
+    //     pallet_dapps_staking::migrations::v2::pre_migrate::<Runtime, Self>()
+    // }
+
+    // #[cfg(feature = "try-runtime")]
+    // fn post_upgrade() -> Result<(), &'static str> {
+    //     pallet_dapps_staking::migrations::v2::post_migrate::<Runtime, Self>()
+    // }
+}
 
 impl fp_self_contained::SelfContainedCall for Call {
     type SignedInfo = H160;
