@@ -798,7 +798,26 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
+    DappsStakingMigrationV3,
 >;
+
+// Migration for fixing era length in dapps staking.
+pub struct DappsStakingMigrationV3;
+
+impl OnRuntimeUpgrade for DappsStakingMigrationV3 {
+    fn on_runtime_upgrade() -> frame_support::weights::Weight {
+        // We can always use this formula to calculate the offset to compute the next era starting block
+        // ```rust
+        // let DAPP_STAKING_BLOCK_OFFSET = current_block - (current_block % blocks_per_era) - (current_block * blocks_per_era);
+        // ```
+
+        let dapps_staking_block_offset: u32 = 172800;    // Shibuya: 819166 - (819166 % 1200) - (538 * 1200)
+        // let dapps_staking_block_offset: u32 = 489600;     // Shiden: 1133086 - (1133086 % 7200) - (89 * 7200)
+        // let dapps_staking_block_offset: u32 = 223200;      // Astar: 322086 - (322086 % 7200) - (13 * 7200)
+
+        pallet_dapps_staking::migrations::v3::migrate::<Runtime>(dapps_staking_block_offset)
+    }
+}
 
 impl fp_self_contained::SelfContainedCall for Call {
     type SignedInfo = H160;
