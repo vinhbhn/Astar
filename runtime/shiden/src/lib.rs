@@ -750,14 +750,18 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
-    DappsStakingMigrationV3,
+    DappsStakingFixEraLength,
 >;
 
 // Migration for fixing era length in dapps staking.
-pub struct DappsStakingMigrationV3;
+pub struct DappsStakingFixEraLength;
 
-impl OnRuntimeUpgrade for DappsStakingMigrationV3 {
+impl OnRuntimeUpgrade for DappsStakingFixEraLength {
     fn on_runtime_upgrade() -> frame_support::weights::Weight {
+        use sp_runtime::SaturatedConversion;
+        use frame_system::pallet::Config;
+        use pallet_dapps_staking::{Config as DappStakingConfig, CurrentEra, NextEraStartingBlock};
+        
         // We can always use this formula to calculate the offset to compute the next era starting block
         // ```rust
         // let DAPP_STAKING_BLOCK_OFFSET = current_block - (current_block % blocks_per_era) - (current_block * blocks_per_era);
@@ -767,7 +771,18 @@ impl OnRuntimeUpgrade for DappsStakingMigrationV3 {
         let dapps_staking_block_offset: u32 = 489600;     // Shiden: 1133086 - (1133086 % 7200) - (89 * 7200)
         // let dapps_staking_block_offset: u32 = 223200;      // Astar: 322086 - (322086 % 7200) - (13 * 7200)
 
-        pallet_dapps_staking::migrations::v3::migrate::<Runtime>(dapps_staking_block_offset)
+        let blocks_per_era = <Runtime as DappStakingConfig>::BlockPerEra::get().saturated_into::<u32>();
+        let current_era = CurrentEra::<Runtime>::get();
+
+        // for local upgrade testing, as prev runtime version INCLUDES dapps staking (block 1 starts era 1)
+        // let next_era_starting_block =  ((current_era + 1) * blocks_per_era) - blocks_per_era;
+
+        // for shibuya/shiden/astar upgrade (or any network where dapps staking was NOT included in genesis)
+        let next_era_starting_block =
+            dapps_staking_block_offset + ((current_era + 1) * blocks_per_era);
+
+        NextEraStartingBlock::<Runtime>::put(next_era_starting_block.saturated_into::<<Runtime as Config>::BlockNumber>());
+        <Runtime as Config>::DbWeight::get().reads(1) + <Runtime as Config>::DbWeight::get().writes(1)
     }
 }
 
