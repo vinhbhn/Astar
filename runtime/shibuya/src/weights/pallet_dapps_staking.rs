@@ -120,4 +120,23 @@ impl<T: frame_system::Config> pallet_dapps_staking::WeightInfo for WeightInfo<T>
 		(2_305_000 as Weight)
 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
 	}
+	// Storage: DappsStaking PalletDisabled (r:1 w:0)
+	// Storage: DappsStaking ForceEra (r:1 w:0)
+	// Storage: DappsStaking CurrentEra (r:1 w:0)
+	// Storage: DappsStaking NextEraStartingBlock (r:1 w:0)
+	fn on_initialize_not_new_era() -> Weight {
+		(30_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+	}
+	// Storage: DappsStaking PalletDisabled (r:1 w:0)
+	// Storage: DappsStaking ForceEra (r:1 w:1)
+	// Storage: DappsStaking CurrentEra (r:1 w:1)
+	// Storage: DappsStaking NextEraStartingBlock (r:1 w:1)
+	// Storage: DappsStaking BlockRewardAccumulator (r:1 w:0)
+	// Storage: DappsStaking EraRewardsAndStakes (r:1 w:2)
+	fn on_initialize_new_era() -> Weight {
+		(85_000_000 as Weight)
+			.saturating_add(T::DbWeight::get().reads(6 as Weight))
+			.saturating_add(T::DbWeight::get().writes(5 as Weight))
+	}
 }
