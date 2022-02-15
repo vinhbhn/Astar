@@ -762,23 +762,12 @@ impl OnRuntimeUpgrade for DappsStakingFixEraLength {
         use pallet_dapps_staking::{Config as DappStakingConfig, CurrentEra, NextEraStartingBlock};
         use sp_runtime::SaturatedConversion;
 
-        // We can always use this formula to calculate the offset to compute the next era starting block
-        // ```rust
-        // let DAPP_STAKING_BLOCK_OFFSET = current_block - (current_block % blocks_per_era) - (current_block * blocks_per_era);
-        // ```
-
-        // let dapps_staking_block_offset: u32 = 172800;    // Shibuya: 819166 - (819166 % 1200) - (538 * 1200)
         let dapps_staking_block_offset: u32 = 489600; // Shiden: 1133086 - (1133086 % 7200) - (89 * 7200)
-                                                      // let dapps_staking_block_offset: u32 = 223200;      // Astar: 322086 - (322086 % 7200) - (13 * 7200)
 
         let blocks_per_era =
             <Runtime as DappStakingConfig>::BlockPerEra::get().saturated_into::<u32>();
         let current_era = CurrentEra::<Runtime>::get();
 
-        // for local upgrade testing, as prev runtime version INCLUDES dapps staking (block 1 starts era 1)
-        // let next_era_starting_block =  ((current_era + 1) * blocks_per_era) - blocks_per_era;
-
-        // for shibuya/shiden/astar upgrade (or any network where dapps staking was NOT included in genesis)
         let next_era_starting_block =
             dapps_staking_block_offset + ((current_era + 1) * blocks_per_era);
 
