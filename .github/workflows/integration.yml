@@ -2,9 +2,6 @@ on: [push]
 
 name: Integration
 
-env:
-  RUST_VERSION: 'nightly-2021-11-29'
-
 jobs:
   native:
     runs-on: ${{ matrix.os }}
@@ -12,10 +9,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest]
     steps:
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ env.RUST_VERSION }}
-        targets: 'wasm32-unknown-unknown'
+    - name: Install & display rust toolchain
+      run: rustup show
 
     - name: Checkout the source code
       uses: actions/checkout@master
@@ -42,10 +37,8 @@ jobs:
   runtime-benchmarks:
     runs-on: ubuntu-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ env.RUST_VERSION }}
-        targets: 'wasm32-unknown-unknown'
+    - name: Install & display rust toolchain
+      run: rustup show
 
     - name: Checkout the source code
       uses: actions/checkout@master
@@ -61,10 +54,8 @@ jobs:
   try-runtime:
     runs-on: ubuntu-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ env.RUST_VERSION }}
-        targets: 'wasm32-unknown-unknown'
+    - name: Install & display rust toolchain
+      run: rustup show
 
     - name: Checkout the source code
       uses: actions/checkout@master
@@ -92,10 +83,8 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ env.RUST_VERSION }}
-        targets: 'wasm32-unknown-unknown'
+    - name: Install & display rust toolchain
+      run: rustup show
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
