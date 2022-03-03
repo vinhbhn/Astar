@@ -7,7 +7,7 @@
 use codec::{Decode, Encode};
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::{Contains, Currency, FindAuthor, Imbalance, Nothing, OnUnbalanced, OnRuntimeUpgrade},
+    traits::{Contains, Currency, FindAuthor, Imbalance, Nothing, OnRuntimeUpgrade, OnUnbalanced},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_PER_SECOND},
         DispatchClass, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
@@ -815,15 +815,14 @@ impl OnRuntimeUpgrade for DappsStakingFixEraLength {
         let blocks_per_era =
             <Runtime as DappStakingConfig>::BlockPerEra::get().saturated_into::<u32>();
         let current_era = CurrentEra::<Runtime>::get();
-        
+
         let next_era_starting_block =
             dapps_staking_block_offset + ((current_era + 1) * blocks_per_era);
 
         NextEraStartingBlock::<Runtime>::put(
             next_era_starting_block.saturated_into::<<Runtime as Config>::BlockNumber>(),
         );
-        <Runtime as Config>::DbWeight::get().reads(1)
-            + <Runtime as Config>::DbWeight::get().writes(1)
+        <Runtime as Config>::DbWeight::get().reads_writes(1, 1)
     }
 }
 
