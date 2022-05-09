@@ -142,16 +142,34 @@
 <span id="141">141</span>
 <span id="142">142</span>
 <span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Chain specifications.</span>
 
 <span class="kw">use</span> <span class="ident">local_runtime</span>::{
-    <span class="ident">wasm_binary_unwrap</span>, <span class="ident">AccountId</span>, <span class="ident">AuraConfig</span>, <span class="ident">AuraId</span>, <span class="ident">BalancesConfig</span>, <span class="ident">BaseFeeConfig</span>, <span class="ident">EVMConfig</span>,
-    <span class="ident">GenesisConfig</span>, <span class="ident">GrandpaConfig</span>, <span class="ident">GrandpaId</span>, <span class="ident">Precompiles</span>, <span class="ident">Signature</span>, <span class="ident">SudoConfig</span>, <span class="ident">SystemConfig</span>,
-    <span class="ident">VestingConfig</span>,
+    <span class="ident">wasm_binary_unwrap</span>, <span class="ident">AccountId</span>, <span class="ident">AuraConfig</span>, <span class="ident">AuraId</span>, <span class="ident">BalancesConfig</span>, <span class="ident">BaseFeeConfig</span>,
+    <span class="ident">BlockRewardConfig</span>, <span class="ident">EVMConfig</span>, <span class="ident">GenesisConfig</span>, <span class="ident">GrandpaConfig</span>, <span class="ident">GrandpaId</span>, <span class="ident">Precompiles</span>, <span class="ident">Signature</span>,
+    <span class="ident">SudoConfig</span>, <span class="ident">SystemConfig</span>, <span class="ident">VestingConfig</span>,
 };
 <span class="kw">use</span> <span class="ident">sc_service::ChainType</span>;
 <span class="kw">use</span> <span class="ident">sp_core</span>::{<span class="ident">crypto::Ss58Codec</span>, <span class="ident">sr25519</span>, <span class="ident">Pair</span>, <span class="ident">Public</span>};
-<span class="kw">use</span> <span class="ident">sp_runtime::traits</span>::{<span class="ident">IdentifyAccount</span>, <span class="ident">Verify</span>};
+<span class="kw">use</span> <span class="ident">sp_runtime</span>::{
+    <span class="ident">traits</span>::{<span class="ident">IdentifyAccount</span>, <span class="ident">Verify</span>},
+    <span class="ident">Perbill</span>,
+};
 
 <span class="kw">type</span> <span class="ident">AccountPublic</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">Signature</span> <span class="kw">as</span> <span class="ident">Verify</span><span class="op">&gt;</span><span class="ident">::Signer</span>;
 
@@ -200,8 +218,9 @@
                     <span class="ident">get_account_id_from_seed</span>::<span class="op">&lt;</span><span class="ident">sr25519::Public</span><span class="op">&gt;</span>(<span class="string">&quot;Ferdie&quot;</span>),
                     <span class="comment">// Arrakis.TEST account in MetaMask</span>
                     <span class="comment">// Import known test account with private key</span>
-                    <span class="comment">// 0x0261726d7f71ccf1956d61ccc2b7ec6a4d8b34c60889a8765d39e1840124cd39</span>
-                    <span class="ident">AccountId::from_ss58check</span>(<span class="string">&quot;5Gbgok6b2HRpPDm7vSEDffBDsLNmAiFEgRSZcLePVYqKqT3i&quot;</span>)
+                    <span class="comment">// 0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391</span>
+                    <span class="comment">// H160 address: 0xaaafB3972B05630fCceE866eC69CdADd9baC2771</span>
+                    <span class="ident">AccountId::from_ss58check</span>(<span class="string">&quot;5FQedkNQcF2fJPwkB6Z1ZcMgGti4vcJQNs6x85YPv3VhjBBT&quot;</span>)
                         .<span class="ident">unwrap</span>(),
                 ],
             )
@@ -233,8 +252,19 @@
             <span class="ident">balances</span>: <span class="ident">endowed_accounts</span>
                 .<span class="ident">iter</span>()
                 .<span class="ident">cloned</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> (<span class="ident">k</span>, <span class="number">1_000_000_000_000_000_000_000</span>))
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> (<span class="ident">k</span>, <span class="number">1_000_000_000_000_000_000_000_000_000</span>))
                 .<span class="ident">collect</span>(),
+        },
+        <span class="ident">block_reward</span>: <span class="ident">BlockRewardConfig</span> {
+            <span class="comment">// Make sure sum is 100</span>
+            <span class="ident">reward_config</span>: <span class="ident">pallet_block_reward::RewardDistributionConfig</span> {
+                <span class="ident">base_treasury_percent</span>: <span class="ident">Perbill::from_percent</span>(<span class="number">25</span>),
+                <span class="ident">base_staker_percent</span>: <span class="ident">Perbill::from_percent</span>(<span class="number">30</span>),
+                <span class="ident">dapps_percent</span>: <span class="ident">Perbill::from_percent</span>(<span class="number">20</span>),
+                <span class="ident">collators_percent</span>: <span class="ident">Perbill::zero</span>(),
+                <span class="ident">adjustable_percent</span>: <span class="ident">Perbill::from_percent</span>(<span class="number">25</span>),
+                <span class="ident">ideal_dapps_staking_tvl</span>: <span class="ident">Perbill::from_percent</span>(<span class="number">40</span>),
+            },
         },
         <span class="ident">vesting</span>: <span class="ident">VestingConfig</span> { <span class="ident">vesting</span>: <span class="macro">vec!</span>[] },
         <span class="ident">aura</span>: <span class="ident">AuraConfig</span> {
@@ -253,7 +283,7 @@
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">addr</span><span class="op">|</span> {
                     (
                         <span class="ident">addr</span>,
-                        <span class="ident">pallet_evm::GenesisAccount</span> {
+                        <span class="ident">fp_evm::GenesisAccount</span> {
                             <span class="ident">nonce</span>: <span class="ident">Default::default</span>(),
                             <span class="ident">balance</span>: <span class="ident">Default::default</span>(),
                             <span class="ident">storage</span>: <span class="ident">Default::default</span>(),
